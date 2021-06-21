@@ -1,0 +1,34 @@
+kind: "BuildConfig"
+apiVersion: build.openshift.io/v1
+metadata:
+  name: "catalog-service-pipeline"
+spec:
+  triggers:
+  - github:
+      secret: 5Mlic4Le
+    type: GitHub
+  - generic:
+      secret: FiArdDBH
+    type: Generic
+  strategy:
+    type: "JenkinsPipeline"
+    jenkinsPipelineStrategy:
+      jenkinsfile: |
+                    pipeline {
+                      agent any
+                      stages{
+                        stage("Build") {
+                          steps{
+                            script{
+                              openshift.withCluster() {
+                                openshift.withProject() {
+                                  echo '*** Build Starting ***'
+                                  openshift.selector('bc', 'openshift-serverless-catalog-service').startBuild("--wait").logs('-f')
+                                  echo '*** Build Complete ***'
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }

@@ -1,0 +1,39 @@
+Pre requisite:
+-------------
+IMPORTANT(namespace "serverless-demo" is used in this example, substitute with yours ) 
+
+1.Prior to doing any steps verify jenkins is available in the namespace.
+If unavailable , install jenkins with the below command in the namespace, and wait till it is up and running.
+"oc new-app jenkins-persistent -p ENABLE_OAUTH=false -e JENKINS_PASSWORD=openshiftpipelines -n serverless-demo"
+
+2.Ensure postgresql DB is installed in the same namespace.
+
+3.Kafka cluster is created with Operators , and Topic "product-price-updated" is created
+
+Pipeline steps
+--------------
+Step 1:
+"oc new-app java~https://github.ibm.com/100mc/openshift-serverless-catalog-service.git -n serverless-demo --as-deployment-config=true"
+This creates a service with name openshift-serverless-catalog-service in namespace serverless-demo
+
+Step 2:
+"oc expose service openshift-serverless-catalog-service -n serverless-demo"
+This creates a route to access the service externally
+
+Step 3:
+Refer catalog service pipeline (catalog-service-pipeline.yaml) which 
+which will create a build config named 'catalog-service-pipeline'.This will 
+be triggered during code commit.This pipeline file has embedded jenkins file which builds and 
+deploys new code. 
+
+"oc create -f catalog-service-pipeline.yaml"		
+
+Step 4:
+Go to Build Webhook in catalog-service-pipeline.
+Select Generic: 
+copy webhook with secret and paste in github> project > settings> webhook	
+
+Step 5:
+Do code Commit.
+Verify whether changes are reflect after pipeline is completed.			
+					
